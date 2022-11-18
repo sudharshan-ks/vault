@@ -6,19 +6,37 @@ on:
   # being inherited from the caller.
   workflow_call:
     inputs:
+      # The RFC3339 formatted time of the revision commit
       artifact-build-date:
         required: false
         type: string
+      # The name of the artifact that is to be used for testing
       artifact-name:
         required: true
         type: string
+      # The commit SHA of the last commit used to build Vault
       artifact-revision:
         required: true
         type: string
-      artifact-source:
-        required: false
-        type: string
+      # The expected Vault version of the artifact
       artifact-version:
+        required: true
+        type: string
+      # The name matrix in enos-run-matrices that we want to use. The name follows
+      # the format of:
+      #   $caller_workflow_name-$artifact_source-$vault_edition-$platform-$arch-$packing_type
+      #
+      # Where those mean:
+      #   caller_workflow_name: the Github Actions workflow that is calling this one
+      #   artifact_source: the remote artifact repository. One of github or artifactory
+      #   vault_edition: which edition of vault that we're testing
+      #   platform: the host platform, e.g. linux or macos
+      #   arch: the host architecture, e.g. arm64 or amd64
+      #   packing_type: how vault is packaged, e.g. zip, deb, or rpm
+      #
+      # For example:
+      #   build-github-oss-linux-amd64-deb
+      enos-matrix:
         required: true
         type: string
 
@@ -27,7 +45,6 @@ env:
   ARTIFACT_BUILD_DATE: ${{ inputs.artifact-build-date }}
   ARTIFACT_NAME: ${{ inputs.artifact-name }}
   ARTIFACT_REVISION: ${{ inputs.artifact-revision }}
-  ARTIFACT_SOURCE: ${{ inputs.artifact-source }}
   ARTIFACT_VERSION: ${{ inputs.artifact-version }}
 
 jobs:
@@ -42,8 +59,9 @@ jobs:
       - name: Create Enos scenario matrix
         id: enos-matrix
         run: |
-          [[ ${{ env.ARTIFACT_NAME }} == *"ent"* ]] && scenarioFile=$(cat ./.github/enos-run-matrices/${{ env.ARTIFACT_SOURCE }}-ent.json |jq -c .) || scenarioFile=$(cat ./.github/enos-run-matrices/${{ env.ARTIFACT_SOURCE }}-oss.json |jq -c .)
+          scenarioFile=$(cat ./.github/enos-run-matrices/${{ inputs.enos-matrix }}.json | jq -c .)
           echo "matrix=$scenarioFile" >> $GITHUB_OUTPUT
+
   # Run Integration tests on Enos scenario matrix
   enos:
     name: Integration
@@ -76,27 +94,22 @@ jobs:
         uses: hashicorp/action-setup-enos@v1
         with:
           github-token: ${{ secrets.ELEVATED_GITHUB_TOKEN }}
-      - name: Set up AWS SSH private key
+      - name: Prepare scenario dependencies
         run: |
+          mkdir -p ./enos/support/terraform-plugin-cache
           mkdir -p ./enos/support
           echo "${{ secrets.ENOS_CI_SSH_KEY }}" > ./enos/support/private_key.pem
           chmod 600 ./enos/support/private_key.pem
-      - name: Download Linux AMD64 Vault bundle
-        if: ${{ env.ARTIFACT_SOURCE == 'crt' }}
+      - if: contains(inputs.enos-matrix, 'github')
+        name: Download Vault artifact
         id: download
         uses: actions/download-artifact@v3
         with:
           name: ${{ inputs.artifact-name }}
           path: ./enos/support/downloads
-      - name: unzip Downloaded Vault bundle
-        if: ${{ env.ARTIFACT_SOURCE == 'crt' }}
-        run: |
-          unzip ${{steps.download.outputs.download-path}}/*.zip -d enos/support
-          mv ${{steps.download.outputs.download-path}}/*.zip enos/support/vault.zip
-      - name: Prepare for scenario execution
-        run: |
-          mkdir -p enos/support/terraform-plugin-cache
-          [[ ${{ env.ARTIFACT_NAME }} == *"ent"* ]] && echo "${{ secrets.VAULT_LICENSE }}" > ./enos/support/vault.hclic || true
+      - if: contains(inputs.enos-matrix, 'ent')
+        name: Configure Vault license
+        run: echo "${{ secrets.VAULT_LICENSE }}" > ./enos/support/vault.hclic || true
       - name: Run Enos scenario
         id: run
         # Continue once and retry to handle occasional blips when creating
@@ -113,7 +126,7 @@ jobs:
           ENOS_VAR_vault_build_date: ${{ env.ARTIFACT_BUILD_DATE }}
           ENOS_VAR_vault_product_version: ${{ env.ARTIFACT_VERSION }}
           ENOS_VAR_vault_revision: ${{ env.ARTIFACT_REVISION }}
-          ENOS_VAR_vault_bundle_path: ./support/vault.zip
+          ENOS_VAR_vault_bundle_path: ./support/downloads/${{ inputs.artifact-name }}
         run: |
           enos scenario run --timeout 60m0s --chdir ./enos ${{ matrix.scenario }}
       - name: Retry Enos scenario
@@ -130,7 +143,7 @@ jobs:
           ENOS_VAR_vault_build_date: ${{ env.ARTIFACT_BUILD_DATE }}
           ENOS_VAR_vault_product_version: ${{ env.ARTIFACT_VERSION }}
           ENOS_VAR_vault_revision: ${{ env.ARTIFACT_REVISION }}
-          ENOS_VAR_vault_bundle_path: ./support/vault.zip
+          ENOS_VAR_vault_bundle_path: ./support/downloads/${{ inputs.artifact-name }}
         run: |
           enos scenario run --timeout 60m0s --chdir ./enos ${{ matrix.scenario }}
       - name: Destroy Enos scenario
@@ -149,7 +162,7 @@ jobs:
           ENOS_VAR_vault_build_date: ${{ env.ARTIFACT_BUILD_DATE }}
           ENOS_VAR_vault_product_version: ${{ env.ARTIFACT_VERSION }}
           ENOS_VAR_vault_revision: ${{ env.ARTIFACT_REVISION }}
-          ENOS_VAR_vault_bundle_path: ./support/vault.zip
+          ENOS_VAR_vault_bundle_path: ./support/downloads/${{ inputs.artifact-name }}
         run: |
           enos scenario destroy --timeout 60m0s --chdir ./enos ${{ matrix.scenario }}
       - name: Cleanup Enos runtime directories
