@@ -20,7 +20,7 @@ function build_date() {
 # Get the full version information
 function version() {
   local version
-  version=$(<../../../../.release/VERSION)
+  version=$(<.release/VERSION)
 
 }
 
@@ -107,6 +107,9 @@ function main() {
   ;;
   revision)
     build_revision
+  ;;
+  version)
+    version
   ;;
   *)
     echo "unknown sub-command" >&2
