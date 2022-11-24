@@ -64,7 +64,7 @@ jobs:
           instructions: |-
             CGO_ENABLED=0 go build -o "$BIN_PATH" -trimpath \
             -ldflags "
-              -X main.Version=$PRODUCT_VERSION -X main.GitCommit=$PRODUCT_REVISION -X main.BuildDate=$PRODUCT_REVISION_TIME
+              -X github.com/hashicorp/vault/sdk/version.Version=$PRODUCT_VERSION -X github.com/hashicorp/vault/sdk/version.GitCommit=$PRODUCT_REVISION -X github.com/hashicorp/vault/sdk/version.BuildDate=$PRODUCT_REVISION_TIME
             "
       - name: Determine artifact basename
         env:
