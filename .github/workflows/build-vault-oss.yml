@@ -34,6 +34,12 @@ on:
       vault-version:
         type: string
         required: true
+      vault-base-version:
+        type: string
+        required: true
+      vault-prerelease-version:
+        type: string
+        required: true
 
 jobs:
   build:
@@ -54,6 +60,9 @@ jobs:
         run: make crt-build-ui
       - name: Build Vault
         uses: hashicorp/actions-go-build@v0.1.7
+        env:
+          BASE_VERSION: ${{ vault-base-version }}
+          PRERELEASE_VERSION: ${{ vault-prerelease-version }}
         with:
           product_name: ${{ inputs.package-name }}
           product_version: ${{ inputs.vault-version }}
@@ -64,7 +73,10 @@ jobs:
           instructions: |-
             CGO_ENABLED=0 go build -o "$BIN_PATH" -trimpath \
             -ldflags "
-              -X github.com/hashicorp/vault/sdk/version.Version=$PRODUCT_VERSION -X github.com/hashicorp/vault/sdk/version.GitCommit=$PRODUCT_REVISION -X github.com/hashicorp/vault/sdk/version.BuildDate=$PRODUCT_REVISION_TIME
+              -X github.com/hashicorp/vault/sdk/version.Version=${BASE_VERSION} \
+              -X github.com/hashicorp/vault/sdk/version.VersionPrerelease=${PRERELEASE_VERSION} \
+              -X github.com/hashicorp/vault/sdk/version.GitCommit=$PRODUCT_REVISION \
+              -X github.com/hashicorp/vault/sdk/version.BuildDate=$PRODUCT_REVISION_TIME
             "
       - name: Determine artifact basename
         env:
