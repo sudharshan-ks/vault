@@ -11,6 +11,7 @@ var (
 	// Whether cgo is enabled or not; set at build time
 	CgoEnabled bool
 
+	// Default values - used when building locally
 	Version           = "0.0.0"
 	VersionPrerelease = "dev"
 	VersionMetadata   = ""
