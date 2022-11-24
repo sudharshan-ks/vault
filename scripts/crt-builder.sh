@@ -164,6 +164,15 @@ function main() {
   version)
     version
   ;;
+  version-base)
+    version_base
+  ;;
+  version-pre)
+    version_pre
+  ;;
+  version-meta)
+    version_metadata
+  ;;
   *)
     echo "unknown sub-command" >&2
     exit 1
