@@ -375,7 +375,9 @@ func (d dynamicSystemView) GroupsForEntity(entityID string) ([]*logical.Group, e
 func (d dynamicSystemView) PluginEnv(_ context.Context) (*logical.PluginEnvironment, error) {
 	v := version.GetVersion()
 	return &logical.PluginEnvironment{
-		VaultVersion: v.Version,
+		VaultVersion:           v.Version,
+		VaultVersionPrerelease: v.VersionPrerelease,
+		VaultVersionMetadata:   v.VersionMetadata,
 	}, nil
 }
 
