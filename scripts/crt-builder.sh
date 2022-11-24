@@ -17,13 +17,6 @@ function build_date() {
   git show --no-show-signature -s --format=%cd --date=format:"$DATE_FORMAT" HEAD
 }
 
-# Get the full version information
-function version() {
-  local version
-  version=$(<.release/VERSION)
-
-}
-
 # Get the revision, which is the latest commit SHA
 function build_revision() {
   git rev-parse HEAD
@@ -37,15 +30,6 @@ function repo() {
 # Determine the root directory of the repository
 function repo_root() {
   git rev-parse --show-toplevel
-}
-
-# Determine the artifact basename based on metadata
-function artifact_basename() {
-  : "${PKG_NAME:="vault"}"
-  : "${GOOS:=$(go env GOOS)}"
-  : "${GOARCH:=$(go env GOARCH)}"
-
-  echo "${PKG_NAME}_$(version)_${GOOS}_${GOARCH}"
 }
 
 # Build the UI
@@ -63,11 +47,53 @@ function build_ui() {
   popd
 }
 
-# Bundle the dist directory
-function bundle() {
-  : "${BUNDLE_PATH:=$(repo_root)/vault.zip}"
-  echo "--> Bundling dist/* to $BUNDLE_PATH"
-  zip -r -j "$BUNDLE_PATH" dist/
+# Build Vault
+function build() {
+  local version
+  local revision
+  local prerelease
+  local build_date
+  local ldflags
+  local msg
+
+  # Get or set our basic build metadata
+  revision=$(build_revision)
+  build_date=$(build_date) #
+  : "${BIN_PATH:="dist/"}" #if not run by actions-go-build (enos local) then set this explicitly
+  : "${GO_TAGS:=""}"
+  : "${KEEP_SYMBOLS:=""}"
+
+  # Build our ldflags
+  msg="--> Building Vault revision $revision, built $build_date"
+
+  # Strip the symbol and dwarf information by default
+  if [ -n "$KEEP_SYMBOLS" ]; then
+    ldflags=""
+  else
+    ldflags="-s -w "
+  fi
+
+  # if building locally with enos - don't need to set version/prerelease/metadata as the default from version_base.go will be used
+  ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.GitCommit=$revision -X github.com/hashicorp/vault/sdk/version.BuildDate=$build_date"
+
+  if [[ ${BASE_VERSION+x} ]]; then
+    msg="${msg}, base version ${BASE_VERSION}"
+    ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.Version=$BASE_VERSION"
+  fi
+
+  if [[ ${PRERELEASE_VERSION+x} ]]; then
+    msg="${msg}, prerelease ${PRERELEASE_VERSION}"
+    ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.VersionPrerelease=$PRERELEASE_VERSION"
+  fi
+
+  if [[ ${VERSION_METADATA+x} ]]; then
+    msg="${msg}, metadata ${VERSION_METADATA}"
+    ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.VersionMetadata=$VERSION_METADATA"
+  fi
+
+  # Build vault
+  echo "$msg"
+  go build -o "$BIN_PATH" -tags "$GO_TAGS" -ldflags "$ldflags" -trimpath -buildvcs=false
 }
 
 # Prepare legal requirements for packaging
@@ -87,17 +113,11 @@ function prepare_legal() {
 # Run the CRT Builder
 function main() {
   case $1 in
-  artifact-basename)
-    artifact_basename
-  ;;
   build)
     build
   ;;
   build-ui)
     build_ui
-  ;;
-  bundle)
-    bundle
   ;;
   date)
     build_date
@@ -107,9 +127,6 @@ function main() {
   ;;
   revision)
     build_revision
-  ;;
-  version)
-    version
   ;;
   *)
     echo "unknown sub-command" >&2

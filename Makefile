@@ -260,13 +260,11 @@ ci-verify:
 crt-build-ui:
 	@$(CURDIR)/scripts/crt-builder.sh build-ui
 
-.PHONY: crt-bundle
-crt-bundle:
-	@$(CURDIR)/scripts/crt-builder.sh bundle
-
-.PHONY: crt-get-artifact-basename
-crt-get-artifact-basename:
-	@$(CURDIR)/scripts/crt-builder.sh artifact-basename
+# These crt targets are used for release builds by .github/workflows/build.yml
+# and for artifact_source:local Enos scenario variants.
+.PHONY: crt-build
+crt-build:
+	@$(CURDIR)/scripts/crt-builder.sh build
 
 .PHONY: crt-get-date
 crt-get-date:
@@ -276,22 +274,26 @@ crt-get-date:
 crt-get-revision:
 	@$(CURDIR)/scripts/crt-builder.sh revision
 
-.PHONY: crt-get-version
-crt-get-version:
-	@$(CURDIR)/scripts/crt-builder.sh version
-
-.PHONY: crt-get-version-base
-crt-get-version-base:
-	@$(CURDIR)/scripts/crt-builder.sh version-base
-
-.PHONY: crt-get-version-pre
-crt-get-version-pre:
-	@$(CURDIR)/scripts/crt-builder.sh version-pre
-
-.PHONY: crt-get-version-meta
-crt-get-version-meta:
-	@$(CURDIR)/scripts/crt-builder.sh version-meta
-
 .PHONY: crt-prepare-legal
 crt-prepare-legal:
-	@$(CURDIR)/scripts/crt-builder.sh prepare-legal
+	@$(CURDIR)/scripts/enos-local.sh prepare-legal
+
+.PHONY: enos-get-version
+enos-get-version:
+	@$(CURDIR)/scripts/enos-local.sh version
+
+.PHONY: enos-get-version-base
+enos-get-version-base:
+	@$(CURDIR)/scripts/enos-local.sh version-base
+
+.PHONY: enos-get-version-pre
+enos-get-version-pre:
+	@$(CURDIR)/scripts/enos-local.sh version-pre
+
+.PHONY: enos-get-version-meta
+enos-get-version-meta:
+	@$(CURDIR)/scripts/enos-local.sh version-meta
+
+.PHONY: enos-bundle
+enos-bundle:
+	@$(CURDIR)/scripts/enos-local.sh bundle
