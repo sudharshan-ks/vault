@@ -4,7 +4,7 @@
 # We use it in build-vault.yml for building release artifacts with CRT. It is
 # also used by Enos for artifact_source:local scenario variants.
 
-set -eo pipefail
+set -euo pipefail
 
 # We don't want to get stuck in some kind of interactive pager
 export GIT_PAGER=cat
@@ -76,17 +76,17 @@ function build() {
   # if building locally with enos - don't need to set version/prerelease/metadata as the default from version_base.go will be used
   ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.GitCommit=$revision -X github.com/hashicorp/vault/sdk/version.BuildDate=$build_date"
 
-  if [ -n "$BASE_VERSION" ]; then
+  if [[ ${BASE_VERSION+x} ]]; then
     msg="${msg}, base version ${BASE_VERSION}"
     ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.Version=$BASE_VERSION"
   fi
 
-  if [ -n "$PRERELEASE_VERSION" ]; then
+  if [[ ${PRERELEASE_VERSION+x} ]]; then
     msg="${msg}, prerelease ${PRERELEASE_VERSION}"
     ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.VersionPrerelease=$PRERELEASE_VERSION"
   fi
 
-  if [ -n "$VERSION_METADATA" ]; then
+  if [[ ${$VERSION_METADATA+x} ]]; then
     msg="${msg}, metadata ${VERSION_METADATA}"
     ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.VersionMetadata=$VERSION_METADATA"
   fi
