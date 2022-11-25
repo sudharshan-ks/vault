@@ -76,20 +76,24 @@ function build() {
   # if building locally with enos - don't need to set version/prerelease/metadata as the default from version_base.go will be used
   ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.GitCommit=$revision -X github.com/hashicorp/vault/sdk/version.BuildDate=$build_date"
 
-  if [ -v "$BASE_VERSION" ]; then
+  set -u
+
+  if [ -n "$BASE_VERSION" ]; then
     msg="${msg}, base version ${BASE_VERSION}"
     ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.Version=$BASE_VERSION"
   fi
 
-  if [ -v "$PRERELEASE_VERSION" ]; then
+  if [ -n "$PRERELEASE_VERSION" ]; then
     msg="${msg}, prerelease ${PRERELEASE_VERSION}"
     ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.VersionPrerelease=$PRERELEASE_VERSION"
   fi
 
-  if [ -v "$VERSION_METADATA" ]; then
+  if [ -n "$VERSION_METADATA" ]; then
     msg="${msg}, metadata ${VERSION_METADATA}"
     ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.VersionMetadata=$VERSION_METADATA"
   fi
+
+  set +u
 
   # Build vault
   echo "$msg"
