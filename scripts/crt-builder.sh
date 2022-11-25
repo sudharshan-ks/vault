@@ -57,11 +57,11 @@ function build() {
   local msg
 
   # Get or set our basic build metadata
-  version=$BASE_VERSION
   revision=$PRODUCT_REVISION # is set by the calling action (actions-go-build)
-  bin_path=$BIN_PATH
-  prerelease=$PRERELEASE_VERSION
-  build_date=$(build_date)
+  bin_path=$BIN_PATH # is set by the calling action (actions-go-build)
+  build_date=$PRODUCT_REVISION_TIME # is set by the calling action (actions-go-build)
+  : "${BASE_VERSION:=""}"
+  : "${PRERELEASE_VERSION:=""}"
   : "${VERSION_METADATA:=""}"
   : "${GO_TAGS:=""}"
   : "${KEEP_SYMBOLS:=""}"
@@ -76,11 +76,23 @@ function build() {
     ldflags="-s -w "
   fi
 
-  ldflags="${ldflags}-X github.com/hashicorp/vault/sdk/version.Version=$version \
-  -X github.com/hashicorp/vault/sdk/version.VersionPrerelease=$prerelease \
-  -X github.com/hashicorp/vault/sdk/version.VersionMetadata=$VERSION_METADATA \
-  -X github.com/hashicorp/vault/sdk/version.GitCommit=$revision \
-  -X github.com/hashicorp/vault/sdk/version.BuildDate=$build_date"
+  # if building locally with enos - don't need to set version/prerelease/metadata as the default from version_base.go will be used
+  ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.GitCommit=$revision -X github.com/hashicorp/vault/sdk/version.BuildDate=$build_date"
+
+  if [ -n "$BASE_VERSION" ]; then
+    msg="${msg}, base version ${version}"
+    ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.Version=$BASE_VERSION"
+  fi
+
+  if [ -n "$PRERELEASE_VERSION" ]; then
+    msg="${msg}, prerelease ${prerelease}"
+    ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.VersionPrerelease=$PRERELEASE_VERSION"
+  fi
+
+  if [ -n "$VERSION_METADATA" ]; then
+    msg="${msg}, metadata ${VAULT_METADATA}"
+    ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.VersionMetadata=$VERSION_METADATA"
+  fi
 
   # Build vault
   echo "$msg"

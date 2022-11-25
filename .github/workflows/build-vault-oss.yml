@@ -70,7 +70,7 @@ jobs:
           go_version: ${{ inputs.go-version }}
           os: ${{ inputs.goos }}
           arch: ${{ inputs.goarch }}
-          reproducible: assert
+          reproducible: report
           instructions: |-
             make crt-build
       - if: ${{ inputs.create-packages }}
