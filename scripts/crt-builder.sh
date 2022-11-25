@@ -67,7 +67,7 @@ function build() {
   : "${KEEP_SYMBOLS:=""}"
 
   # Build our ldflags
-  msg="--> Building Vault v$version, revision $revision, built $build_date"
+  msg="--> Building Vault revision $revision, built $build_date"
 
   # Strip the symbol and dwarf information by default
   if [ -n "$KEEP_SYMBOLS" ]; then
