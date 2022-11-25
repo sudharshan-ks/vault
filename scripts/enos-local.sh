@@ -5,6 +5,9 @@
 set -euo pipefail
 
 # Get the full version information
+# this is only needed for local enos builds in order to get the default version from version_base.go
+# this should match the default version that the binary has been built with
+# CRT release builds use the new static version from ./release/VERSION
 function version() {
   local version
   local prerelease
@@ -70,6 +73,7 @@ function repo_root() {
 }
 
 # Bundle the dist directory
+# this is done by the actions-go-build action so only needed for enos local builds
 function bundle() {
   : "${BUNDLE_PATH:=$(repo_root)/vault.zip}"
   echo "--> Bundling dist/* to $BUNDLE_PATH"

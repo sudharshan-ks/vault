@@ -58,7 +58,7 @@ function build() {
 
   # Get or set our basic build metadata
   revision=$(build_revision)
-  build-date=$(build_date) #
+  build_date=$(build_date) #
   : "${BIN_PATH:="dist/"}" #if not run by actions-go-build (enos local) then set this explicitly
   : "${BASE_VERSION:=""}"
   : "${PRERELEASE_VERSION:=""}"
