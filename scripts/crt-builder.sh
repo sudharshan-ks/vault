@@ -59,9 +59,9 @@ function build() {
   # Get or set our basic build metadata
   version=$BASE_VERSION
   revision=$PRODUCT_REVISION # is set by the calling action (actions-go-build)
-  metadata=$VERSION_METADATA
   prerelease=$PRERELEASE_VERSION
   build_date=$(build_date)
+  : "${VERSION_METADATA:=""}"
   : "${GO_TAGS:=""}"
   : "${KEEP_SYMBOLS:=""}"
 
@@ -77,7 +77,7 @@ function build() {
 
   ldflags="${ldflags}-X github.com/hashicorp/vault/sdk/version.Version=$version \
   -X github.com/hashicorp/vault/sdk/version.VersionPrerelease=$prerelease \
-  -X github.com/hashicorp/vault/sdk/version.VersionMetadata=$metadata \
+  -X github.com/hashicorp/vault/sdk/version.VersionMetadata=$VERSION_METADATA \
   -X github.com/hashicorp/vault/sdk/version.GitCommit=$revision \
   -X github.com/hashicorp/vault/sdk/version.BuildDate=$build_date"
 
