@@ -57,9 +57,9 @@ function build() {
   local msg
 
   # Get or set our basic build metadata
-  revision=$PRODUCT_REVISION # is set by the calling action (actions-go-build)
-  bin_path=$BIN_PATH # is set by the calling action (actions-go-build)
-  build_date=$PRODUCT_REVISION_TIME # is set by the calling action (actions-go-build)
+  revision=$(build_revision)
+  build-date=$(build_date) #
+  : "${BIN_PATH:="dist/"}" #if not run by actions-go-build (enos local) then set this explicitly
   : "${BASE_VERSION:=""}"
   : "${PRERELEASE_VERSION:=""}"
   : "${VERSION_METADATA:=""}"
@@ -80,17 +80,17 @@ function build() {
   ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.GitCommit=$revision -X github.com/hashicorp/vault/sdk/version.BuildDate=$build_date"
 
   if [ -n "$BASE_VERSION" ]; then
-    msg="${msg}, base version ${version}"
+    msg="${msg}, base version ${BASE_VERSION}"
     ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.Version=$BASE_VERSION"
   fi
 
   if [ -n "$PRERELEASE_VERSION" ]; then
-    msg="${msg}, prerelease ${prerelease}"
+    msg="${msg}, prerelease ${PRERELEASE_VERSION}"
     ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.VersionPrerelease=$PRERELEASE_VERSION"
   fi
 
   if [ -n "$VERSION_METADATA" ]; then
-    msg="${msg}, metadata ${VAULT_METADATA}"
+    msg="${msg}, metadata ${VERSION_METADATA}"
     ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.VersionMetadata=$VERSION_METADATA"
   fi
 
@@ -130,18 +130,6 @@ function main() {
   ;;
   revision)
     build_revision
-  ;;
-  version)
-    version
-  ;;
-  version-base)
-    version_base
-  ;;
-  version-pre)
-    version_pre
-  ;;
-  version-meta)
-    version_metadata
   ;;
   *)
     echo "unknown sub-command" >&2
