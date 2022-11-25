@@ -163,7 +163,7 @@ jobs:
             docker.io/hashicorp/${{ env.repo }}:${{ env.version }}
             public.ecr.aws/hashicorp/${{ env.repo }}:${{ env.version }}
 
-   build-ubi:
+  build-ubi:
      name: Build Vault Red Hat UBI
      needs:
        - set-product-version
