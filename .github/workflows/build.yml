@@ -60,7 +60,7 @@ jobs:
           path: ${{ steps.generate-metadata-file.outputs.filepath }}
           if-no-files-found: error
 
-   build-other:
+  build-other:
      name: Build Vault Other
      needs:
        - set-product-version
@@ -93,7 +93,7 @@ jobs:
 
   build-linux:
     name: Build Vault Linux
-    needs: 
+    needs:
       - set-product-version
       - product-metadata
     strategy:
@@ -114,7 +114,7 @@ jobs:
       vault-prerelease-version: ${{ needs.set-product-version.outputs.vault-prerelease-version }}
     secrets: inherit
 
-   build-darwin:
+  build-darwin:
      name: Build Vault Darwin
      needs:
      - set-product-version
