@@ -109,7 +109,6 @@ function prepare_legal() {
 # Run the CRT Builder
 function main() {
   case $1 in
-  ;;
   build)
     build
   ;;
