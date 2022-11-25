@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eux -o pipefail
 
-# Install yarn so we can build the UI
+# Install yarn so we can build the UI.
 npm install --global yarn || true
 
 export CGO_ENABLED=0
