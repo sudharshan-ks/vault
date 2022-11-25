@@ -86,7 +86,7 @@ function build() {
     ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.VersionPrerelease=$PRERELEASE_VERSION"
   fi
 
-  if [[ ${$VERSION_METADATA+x} ]]; then
+  if [[ ${VERSION_METADATA+x} ]]; then
     msg="${msg}, metadata ${VERSION_METADATA}"
     ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.VersionMetadata=$VERSION_METADATA"
   fi
