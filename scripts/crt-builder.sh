@@ -60,9 +60,6 @@ function build() {
   revision=$(build_revision)
   build_date=$(build_date) #
   : "${BIN_PATH:="dist/"}" #if not run by actions-go-build (enos local) then set this explicitly
-  : "${BASE_VERSION:=""}"
-  : "${PRERELEASE_VERSION:=""}"
-  : "${VERSION_METADATA:=""}"
   : "${GO_TAGS:=""}"
   : "${KEEP_SYMBOLS:=""}"
 
@@ -79,24 +76,24 @@ function build() {
   # if building locally with enos - don't need to set version/prerelease/metadata as the default from version_base.go will be used
   ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.GitCommit=$revision -X github.com/hashicorp/vault/sdk/version.BuildDate=$build_date"
 
-  if [ -n "$BASE_VERSION" ]; then
+  if [ -v "$BASE_VERSION" ]; then
     msg="${msg}, base version ${BASE_VERSION}"
     ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.Version=$BASE_VERSION"
   fi
 
-  if [ -n "$PRERELEASE_VERSION" ]; then
+  if [ -v "$PRERELEASE_VERSION" ]; then
     msg="${msg}, prerelease ${PRERELEASE_VERSION}"
     ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.VersionPrerelease=$PRERELEASE_VERSION"
   fi
 
-  if [ -n "$VERSION_METADATA" ]; then
+  if [ -v "$VERSION_METADATA" ]; then
     msg="${msg}, metadata ${VERSION_METADATA}"
     ldflags="${ldflags} -X github.com/hashicorp/vault/sdk/version.VersionMetadata=$VERSION_METADATA"
   fi
 
   # Build vault
   echo "$msg"
-  go build -o "$BIN_PATH" -tags "$GO_TAGS" -ldflags "$ldflags"
+  go build -o "$BIN_PATH" -tags "$GO_TAGS" -ldflags "$ldflags" -trimpath -buildvcs=false
 }
 
 # Prepare legal requirements for packaging
