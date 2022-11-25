@@ -59,6 +59,7 @@ function build() {
   # Get or set our basic build metadata
   version=$BASE_VERSION
   revision=$PRODUCT_REVISION # is set by the calling action (actions-go-build)
+  bin_path=$BIN_PATH
   prerelease=$PRERELEASE_VERSION
   build_date=$(build_date)
   : "${VERSION_METADATA:=""}"
@@ -83,13 +84,7 @@ function build() {
 
   # Build vault
   echo "$msg"
-  pushd "$(repo_root)"
-  mkdir -p dist
-  mkdir -p out
-  set -x
-  go build -v -tags "$GO_TAGS" -ldflags "$ldflags" -o dist/
-  set +x
-  popd
+  go build -o "$bin_path" -tags "$GO_TAGS" -ldflags "$ldflags"
 }
 
 # Prepare legal requirements for packaging
