@@ -96,7 +96,7 @@ function build() {
 
   # Build vault
   echo "$msg"
-  go build -o "$bin_path" -tags "$GO_TAGS" -ldflags "$ldflags"
+  go build -o "$BIN_PATH" -tags "$GO_TAGS" -ldflags "$ldflags"
 }
 
 # Prepare legal requirements for packaging
