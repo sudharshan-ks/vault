@@ -85,7 +85,6 @@ jobs:
        go-tags: ui
        go-version: ${{ needs.product-metadata.outputs.go-version }}
        package-name: ${{ needs.product-metadata.outputs.package-name }}
-       build-date: ${{ needs.product-metadata.outputs.build-date }}
        vault-version: ${{ needs.set-product-version.outputs.vault-version }}
        vault-base-version: ${{ needs.set-product-version.outputs.vault-base-version }}
        vault-prerelease-version: ${{ needs.set-product-version.outputs.vault-prerelease-version }}
@@ -108,7 +107,6 @@ jobs:
       go-tags: ui
       go-version: ${{ needs.product-metadata.outputs.go-version }}
       package-name: ${{ needs.product-metadata.outputs.package-name }}
-      build-date: ${{ needs.product-metadata.outputs.build-date }}
       vault-version: ${{ needs.set-product-version.outputs.vault-version }}
       vault-base-version: ${{ needs.set-product-version.outputs.vault-base-version }}
       vault-prerelease-version: ${{ needs.set-product-version.outputs.vault-prerelease-version }}
@@ -132,7 +130,6 @@ jobs:
        go-tags: ui netcgo
        go-version: ${{ needs.product-metadata.outputs.go-version }}
        package-name: ${{ needs.product-metadata.outputs.package-name }}
-       build-date: ${{ needs.product-metadata.outputs.build-date }}
        vault-version: ${{ needs.set-product-version.outputs.vault-version }}
        vault-base-version: ${{ needs.set-product-version.outputs.vault-base-version }}
        vault-prerelease-version: ${{ needs.set-product-version.outputs.vault-prerelease-version }}

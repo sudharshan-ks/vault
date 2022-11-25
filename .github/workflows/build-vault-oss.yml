@@ -40,9 +40,6 @@ on:
       vault-prerelease-version:
         type: string
         required: true
-      build-date:
-        type: string
-        required: true
 jobs:
   build:
     runs-on: "ubuntu-latest"
@@ -65,8 +62,8 @@ jobs:
         env:
           BASE_VERSION: ${{ inputs.vault-base-version }}
           PRERELEASE_VERSION: ${{ inputs.vault-prerelease-version }}
-          BUILD_DATE: ${{ inputs.build-date }}
           GO_TAGS: ${{ inputs.go-tags }}
+          CGO_ENABLED: ${{ inputs.cgo-enabled }}
         with:
           product_name: ${{ inputs.package-name }}
           product_version: ${{ inputs.vault-version }}
@@ -75,28 +72,7 @@ jobs:
           arch: ${{ inputs.goarch }}
           reproducible: assert
           instructions: |-
-            CGO_ENABLED=0 go build -o "$BIN_PATH" -trimpath \
-            -tags ${GO_TAGS} \
-            -ldflags "
-              -X github.com/hashicorp/vault/sdk/version.Version=${BASE_VERSION} \
-              -X github.com/hashicorp/vault/sdk/version.VersionPrerelease=${PRERELEASE_VERSION} \
-              -X github.com/hashicorp/vault/sdk/version.GitCommit=$PRODUCT_REVISION \
-              -X github.com/hashicorp/vault/sdk/version.BuildDate=$BUILD_DATE
-            "
-      - name: Determine artifact basename
-        env:
-          GOARCH: ${{ inputs.goarch }}
-          GOOS: ${{ inputs.goos }}
-        run: echo "ARTIFACT_BASENAME=${{ inputs.package-name }}_${{ inputs.vault-version }}_${{ inputs.goos }}_${{ inputs.goarch }}" >> $GITHUB_ENV
-      - name: Bundle Vault
-        env:
-          BUNDLE_PATH: out/${{ env.ARTIFACT_BASENAME }}.zip
-        run: make crt-bundle
-      - uses: actions/upload-artifact@v3
-        with:
-          name: ${{ env.ARTIFACT_BASENAME }}.zip
-          path: out/${{ env.ARTIFACT_BASENAME }}.zip
-          if-no-files-found: error
+            make crt-build
       - if: ${{ inputs.create-packages }}
         uses: hashicorp/actions-packaging-linux@v1
         with:
